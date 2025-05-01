@@ -1,0 +1,141 @@
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.1
+    container_name: elasticsearch-secure
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=changeme
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  postgres:
+    image: postgres:15
+    container_name: camunda-postgres
+    environment:
+      - POSTGRES_PASSWORD=camunda
+      - POSTGRES_USER=camunda
+      - POSTGRES_DB=camunda
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0
+    container_name: camunda-keycloak
+    command: start-dev
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    ports:
+      - "8080:8080"
+
+  identity:
+    image: camunda/identity:8.7.0
+    container_name: camunda-identity
+    environment:
+      - IDENTITY_ELASTICSEARCH_HOST=elasticsearch
+      - IDENTITY_ELASTICSEARCH_PORT=9200
+      - IDENTITY_ELASTICSEARCH_USERNAME=elastic
+      - IDENTITY_ELASTICSEARCH_PASSWORD=changeme
+      - IDENTITY_ELASTICSEARCH_SCHEME=http
+      - IDENTITY_ELASTICSEARCH_SECURITY_ENABLED=true
+      - IDENTITY_IDP_ISSUER_URL=http://keycloak:8080/realms/camunda-platform
+      - IDENTITY_IDP_ADMIN_URL=http://keycloak:8080/realms/camunda-platform
+      - IDENTITY_IDP_TOKEN_URL=http://keycloak:8080/realms/camunda-platform/protocol/openid-connect/token
+      - IDENTITY_IDP_JWKS_URL=http://keycloak:8080/realms/camunda-platform/protocol/openid-connect/certs
+      - IDENTITY_DATABASE_HOST=postgres
+      - IDENTITY_DATABASE_NAME=camunda
+      - IDENTITY_DATABASE_USERNAME=camunda
+      - IDENTITY_DATABASE_PASSWORD=camunda
+    ports:
+      - "8084:8080"
+    depends_on:
+      - elasticsearch
+      - postgres
+      - keycloak
+
+  zeebe:
+    image: camunda/zeebe:8.7.1
+    container_name: camunda-zeebe
+    environment:
+      - ZEEBE_BROKER_CLUSTER_PARTITIONSCOUNT=1
+      - ZEEBE_BROKER_CLUSTER_REPLICATIONFACTOR=1
+      - ZEEBE_BROKER_CLUSTER_CLUSTERSIZE=1
+      - ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_CLASSNAME=io.camunda.zeebe.exporter.ElasticsearchExporter
+      - ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_URL=http://elastic:changeme@elasticsearch:9200
+    ports:
+      - "26500:26500"
+    depends_on:
+      - elasticsearch
+
+  operate:
+    image: camunda/operate:8.7.1
+    container_name: camunda-operate
+    environment:
+      - CAMUNDA_OPERATE_ELASTICSEARCH_URL=http://elasticsearch:9200
+      - CAMUNDA_OPERATE_ELASTICSEARCH_USERNAME=elastic
+      - CAMUNDA_OPERATE_ELASTICSEARCH_PASSWORD=changeme
+      - CAMUNDA_OPERATE_IDENTITY_ISSUER_URL=http://keycloak:8080/realms/camunda-platform
+      - CAMUNDA_OPERATE_IDENTITY_CLIENT_ID=operate
+      - CAMUNDA_OPERATE_IDENTITY_CLIENT_SECRET=operate-secret
+      - CAMUNDA_OPERATE_IDENTITY_AUDIENCE=operate
+    ports:
+      - "8090:8080"
+    depends_on:
+      - zeebe
+      - elasticsearch
+      - identity
+
+  tasklist:
+    image: camunda/tasklist:8.7.1
+    container_name: camunda-tasklist
+    environment:
+      - CAMUNDA_TASKLIST_ELASTICSEARCH_URL=http://elasticsearch:9200
+      - CAMUNDA_TASKLIST_ELASTICSEARCH_USERNAME=elastic
+      - CAMUNDA_TASKLIST_ELASTICSEARCH_PASSWORD=changeme
+      - CAMUNDA_TASKLIST_IDENTITY_ISSUER_URL=http://keycloak:8080/realms/camunda-platform
+      - CAMUNDA_TASKLIST_IDENTITY_CLIENT_ID=tasklist
+      - CAMUNDA_TASKLIST_IDENTITY_CLIENT_SECRET=tasklist-secret
+      - CAMUNDA_TASKLIST_IDENTITY_AUDIENCE=tasklist
+    ports:
+      - "8091:8080"
+    depends_on:
+      - zeebe
+      - elasticsearch
+      - identity
+
+  optimize:
+    image: camunda/optimize:8.7.0
+    container_name: camunda-optimize
+    environment:
+      - CAMUNDA_OPTIMIZE_ELASTICSEARCH_URL=http://elasticsearch:9200
+      - CAMUNDA_OPTIMIZE_ELASTICSEARCH_USERNAME=elastic
+      - CAMUNDA_OPTIMIZE_ELASTICSEARCH_PASSWORD=changeme
+      - CAMUNDA_OPTIMIZE_IDENTITY_ISSUER_URL=http://keycloak:8080/realms/camunda-platform
+      - CAMUNDA_OPTIMIZE_IDENTITY_CLIENT_ID=optimize
+      - CAMUNDA_OPTIMIZE_IDENTITY_CLIENT_SECRET=optimize-secret
+      - CAMUNDA_OPTIMIZE_IDENTITY_AUDIENCE=optimize
+      - CAMUNDA_OPTIMIZE_ZEEBE_GATEWAY=gateway:26500
+      - CAMUNDA_OPTIMIZE_DATABASE_HOST=postgres
+      - CAMUNDA_OPTIMIZE_DATABASE_PORT=5432
+      - CAMUNDA_OPTIMIZE_DATABASE_NAME=camunda
+      - CAMUNDA_OPTIMIZE_DATABASE_USERNAME=camunda
+      - CAMUNDA_OPTIMIZE_DATABASE_PASSWORD=camunda
+    ports:
+      - "8092:8080"
+    depends_on:
+      - zeebe
+      - elasticsearch
+      - identity
+      - postgres
+
+volumes:
+  esdata:
+  pgdata:
