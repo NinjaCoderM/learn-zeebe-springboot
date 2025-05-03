@@ -1,0 +1,16 @@
+services:
+  postgresCont:
+    image: postgres:16
+    container_name: postgresCont
+    environment:
+      POSTGRES_DB: codecrafters_db
+      POSTGRES_USER: cc
+      POSTGRES_PASSWORD: cc155
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  pgdata:

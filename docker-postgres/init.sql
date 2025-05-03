@@ -1,0 +1,2 @@
+CREATE SCHEMA IF NOT EXISTS camunda_schema;
+CREATE SCHEMA IF NOT EXISTS flowable_schema;
