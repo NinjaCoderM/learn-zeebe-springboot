@@ -1,0 +1,22 @@
+{
+  "name": "Print Message Connector",
+  "id": "print-message-template",
+  "appliesTo": ["bpmn:ServiceTask"],
+  "properties": [
+    {
+      "type": "Hidden",
+      "value": "io.camunda:print-message",
+      "binding": {
+        "type": "zeebe:taskDefinition:type"
+      }
+    },
+    {
+      "label": "Message",
+      "type": "String",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "message"
+      }
+    }
+  ]
+}

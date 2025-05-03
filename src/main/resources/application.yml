@@ -1,16 +1,29 @@
-camunda.operate:
-  elasticsearch:
-    clusterName: sapptest-elastic
-    host: elasticsearch
-    port: 9200
-    username: elastic
-    password: changeme
-  zeebe:
-    brokerContactPoint: "zeebe:26500"
-  zeebeElasticsearch:
-    clusterName: sapptest-elastic
-    host: elasticsearch
-    port: 9200
-    prefix: zeebe-record
-    username: elastic
-    password: changeme
+camunda:
+  client:
+    mode: self-managed
+    zeebe:
+      enabled: true
+      grpc-address: http://127.0.0.1:26500
+      rest-address: http://127.0.0.1:8080
+
+operate:
+  client:
+    profile: oidc
+    enabled: true
+    base-url: http://127.0.0.1:8081
+    auth-url: http://localhost:18080/auth/realms/camunda-platform/protocol/openid-connect/token
+    audience: operate-api
+    clientId: operate
+    clientSecret: XALaRPl5qwTEItdwCMiPS62nVpKs7dL7
+
+logging:
+  level:
+    org.springframework.web.client.RestTemplate: DEBUG
+    org.apache.http: DEBUG
+    org.apache.http.wire: DEBUG
+
+
+zeebe:
+  client:
+    id: zeebe
+    secret: zecret
