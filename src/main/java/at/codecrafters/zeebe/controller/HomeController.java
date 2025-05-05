@@ -5,6 +5,9 @@ import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 public class HomeController {
 
@@ -15,9 +18,16 @@ public class HomeController {
                 .usePlaintext()
                 .build()) {
 
+//            Map<String, Object> variables = new HashMap<>();
+//            variables.put("message", "Hello Zeebe");
+//            variables.put("inputName", "set Server Side before send");
+
             ProcessInstanceEvent event = client.newCreateInstanceCommand()
                     .bpmnProcessId("first_bpmn_execute")
                     .latestVersion()
+                    //.variables(variables)
+                    //kürzer mit
+                    .variables("{\"message\": \"Hello Zeebe\", \"inputName\": \"set Server Side before send\"}")
                     .send()
                     .join();
 

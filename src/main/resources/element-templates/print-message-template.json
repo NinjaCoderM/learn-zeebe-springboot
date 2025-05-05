@@ -17,6 +17,14 @@
         "type": "zeebe:input",
         "name": "message"
       }
+    },
+    {
+      "label": "Item Name",
+      "type": "String",
+      "binding": {
+        "type": "zeebe:input",
+        "name": "inputName"
+      }
     }
   ]
 }

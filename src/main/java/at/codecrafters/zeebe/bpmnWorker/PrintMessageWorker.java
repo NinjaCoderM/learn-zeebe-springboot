@@ -15,7 +15,7 @@ import java.util.Map;
 @OutboundConnector(
         name = "print-message",
         type = "io.camunda:print-message",
-        inputVariables = {"message"}
+        inputVariables = {"message", "inputName"}
 )
 public class PrintMessageWorker  implements OutboundConnectorFunction {
     private static final Logger LOGGER = LoggerFactory.getLogger(PrintMessageWorker.class);
@@ -37,11 +37,12 @@ public class PrintMessageWorker  implements OutboundConnectorFunction {
 
         Map<String, Object> context = OBJECT_MAPPER.readValue(variablesJson, Map.class);
         String message = (String) context.get("message");
+        String itemName = (String) context.get("inputName");
 
-        if (message != null && !message.isEmpty()) {
-            LOGGER.info("Received message: {}", message);
+        if (message != null && !message.isEmpty() && itemName != null && !itemName.isEmpty()) {
+            LOGGER.info("Received message: {}, {}", message, itemName);
         } else {
-            LOGGER.warn("No message provided.");
+            LOGGER.warn("No message provided." + message + " " + itemName);
         }
 
         return Map.of("status", "Message processed successfully");
