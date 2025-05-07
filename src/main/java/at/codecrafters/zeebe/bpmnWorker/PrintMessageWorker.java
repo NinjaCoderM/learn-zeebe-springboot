@@ -15,7 +15,7 @@ import java.util.Map;
 @OutboundConnector(
         name = "print-message",
         type = "io.camunda:print-message",
-        inputVariables = {"message", "inputName"}
+        inputVariables = {"message", "inputName", "businessKey"}
 )
 public class PrintMessageWorker  implements OutboundConnectorFunction {
     private static final Logger LOGGER = LoggerFactory.getLogger(PrintMessageWorker.class);
@@ -38,12 +38,17 @@ public class PrintMessageWorker  implements OutboundConnectorFunction {
         Map<String, Object> context = OBJECT_MAPPER.readValue(variablesJson, Map.class);
         String message = (String) context.get("message");
         String itemName = (String) context.get("inputName");
+        String businessKey = (String) context.get("businessKey");
 
-        if (message != null && !message.isEmpty() && itemName != null && !itemName.isEmpty()) {
-            LOGGER.info("Received message: {}, {}", message, itemName);
+        if (message != null && !message.isEmpty() && itemName != null && !itemName.isEmpty() && businessKey != null && !businessKey.isEmpty()) {
+            LOGGER.info("Received message: {}, Itemname: {}, BusinessKey: {}", message, itemName, businessKey);
         } else {
-            LOGGER.warn("No message provided." + message + " " + itemName);
+            LOGGER.warn("No message provided." + message + " " + itemName + " " + businessKey);
         }
+
+        long processInstanceKey = jobContext.getProcessInstanceKey();
+        
+        System.out.println("Process Instance Key: " + processInstanceKey);
 
         return Map.of("status", "Message processed successfully");
     }

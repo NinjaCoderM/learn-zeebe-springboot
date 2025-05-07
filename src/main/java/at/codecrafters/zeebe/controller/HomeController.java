@@ -27,11 +27,11 @@ public class HomeController {
                     .latestVersion()
                     //.variables(variables)
                     //kürzer mit
-                    .variables("{\"message\": \"Hello Zeebe\", \"inputName\": \"set Server Side before send\"}")
+                    .variables("{\"message\": \"Hello Zeebe\", \"inputName\": \"set Server Side before send\", \"businessKey\": \"BK-12345\"}")
                     .send()
                     .join();
 
-            System.out.println("Started process with key: " + event.getProcessInstanceKey());
+            System.out.println("Started process with key: " + event.getProcessInstanceKey()); //statt BusinessKey kann processIntanceKey verwendet werden
         } catch (Exception e) {
             e.printStackTrace();
         }

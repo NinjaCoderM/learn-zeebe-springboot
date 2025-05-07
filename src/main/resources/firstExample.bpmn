@@ -7,6 +7,7 @@
         <zeebe:ioMapping>
           <zeebe:input source="=&#34;Add in Camunda Modeler: &#34; + message" target="message" />
           <zeebe:input source="=inputName" target="inputName" />
+          <zeebe:input source="=businessKey" target="businessKey" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1h6iut5</bpmn:incoming>
